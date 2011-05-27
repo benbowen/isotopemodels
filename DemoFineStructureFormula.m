@@ -3,9 +3,9 @@ close all
 clc
 %% set required parameters
 params.resolution=0.001;
-params.windowsize=10;
+params.windowsize=4;
 params = set_nuclei_composition(params);
-%% make a molecule with 4 deuterium positions where the percent incorporation is 9% at each position
+% make a molecule with 4 deuterium positions where the percent incorporation is 9% at each position
 formula1=[]
 formula1.C=25;
 formula1.H=80;
@@ -14,7 +14,9 @@ formula1.O=15;
 formula1.N=12;
 formula1.P=4;
 clc
-pat1=fsisotope(formula1,params,{'Hn'},{[100-9 9]});
+tic
+pat1=fsisotope(formula1,params,{'Hn','C'},{[],[0.5 1 1.5]},{[100-9 9],[90 7.5 2.5]});
+toc
 pat1(:,2)=pat1(:,2)/max(pat1(:,2));
 stem(pat1(:,1),pat1(:,2))
 % 916 is where it should be
