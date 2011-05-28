@@ -2,9 +2,9 @@ clear all
 close all
 clc
 %% set required parameters
-params.resolution=0.001;
+params.resolution=0.1;
 params.windowsize=50;
-params.cutoff=1e-16;
+params.cutoff=1e-4;
 params = set_nuclei_composition(params);
 % make a molecule with 4 deuterium positions where the percent incorporation is 9% at each position
 formula1=[]
@@ -14,10 +14,15 @@ formula1.H=100;
 formula1.O=15;
 formula1.N=15;
 formula1.P=4;
+syminM = seqmatch(fieldnames(formula1),params.nucleiinfo.ele,'exact',true);
+params.nucleiinfo.ele=params.nucleiinfo.ele(syminM);
+params.nucleiinfo.mass=params.nucleiinfo.mass(syminM,:);
+params.nucleiinfo.abund=params.nucleiinfo.abund(syminM,:);
 clc
 tic
 % pat1=fsisotope(formula1,params,{'Hn','C'},{[],[12 13]},{[100-1 1],[0.1 99.9]});
 pat1=fsisotope(formula1,params,{'C'},{[]},{[5 95]});
+toc
 pat2=fsisotope(formula1,params,[],{[]},{[]});
 
 toc
@@ -29,11 +34,44 @@ stem(pat2(:,1),pat2(:,2),'k.')
 hold off
 % 916 is where it should be
 %% make a molecule based on the natural isotopic abundance of elements
+params.resolution=0.0001;
+params.windowsize=50;
+params.cutoff=1e-3;
+params = set_nuclei_composition(params);
+
 formula2.C=25;
 formula2.H=84;
 formula2.O=15;
 formula2.N=12;
 formula2.P=4;
+
+tic
+syminM = seqmatch(fieldnames(formula2),params.nucleiinfo.ele,'exact',true);
+params.nucleiinfo.ele=params.nucleiinfo.ele(syminM);
+params.nucleiinfo.mass=params.nucleiinfo.mass(syminM,:);
+params.nucleiinfo.abund=params.nucleiinfo.abund(syminM,:);
+
+tic
+
+pat1=isotope(formula1,params,{'C'},{[]},{[5 95]});
+toc
+pat2=isotope(formula1,params,[],{[]},{[]});
+
+toc
+pat1(:,2)=pat1(:,2)/max(pat1(:,2));
+pat2(:,2)=pat2(:,2)/max(pat2(:,2));
+stem(pat1(:,1),pat1(:,2),'r.')
+hold on
+stem(pat2(:,1),pat2(:,2),'k.')
+hold off
+%%
+
+[pat2,m]=isotope(formula2,params,[],{[]},{[]});
+toc
+pat2(:,2)=pat2(:,2)/max(pat2(:,2));
+stem(pat2(:,1),pat2(:,2),'r.');
+m
+%%
 pat2=GetMultiNomIsotopicPatternFromFormula(formula2,params,[]);
 pat2(:,2)=pat2(:,2)/max(pat2(:,2));
 %% plot them

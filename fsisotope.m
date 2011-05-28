@@ -7,9 +7,8 @@ function P=fsisotope(formula,params,var_el,var_mass,var_abund)
 % doi: 10.1002/(SICI)1097-0231(19960115)10:1<54::AID-RCM444>3.0.CO;2-Z
 % 
 % Implementation is specifically designed in 2010 & 2011 
-% by Ben Bowen and Curt Fischer.  To enable chemical formulae to utilize 
-% all Modifications to original code
-% include adding new formula parsing and arbitrary nuclide definitions.
+% by Ben Bowen and Curt Fischer to enable chemical formulae to utilize
+% arbitrary nuclide definitions and the entire periodic table.
 
 c = struct2cell(formula);
 c(cellfun(@isempty,c)) = {0};
