@@ -4,6 +4,7 @@ function F = CompareIsotopomerDistributionToTheoretical(ysim,ytheo,charge,params
 %% this part is screwed up for molecules that are super labeled. Could be problematic to leave out
 % xx=find(ytheo(:,1)>(min(ytheo(:,1))+params.massrange/charge));
 % ytheo(xx,:)=[];
+%test
 %% map the m/z values of real onto theoretical. shift relevant peaks in ysim to the m/z value in ytheo if they are within tolerance.
 y=zeros(size(ysim,1),1);
 y = ysim; %initial y to have all of the values of ysim.  The loop below will shift the m/z values of some peaks.
