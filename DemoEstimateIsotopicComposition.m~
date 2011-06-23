@@ -1,0 +1,76 @@
+clear all
+close all
+clc
+%%
+addpath(genpath('/Users/bpb/matlabtoolbox/'))
+%%
+[pathname filename]=myfileselector('xml')
+%% get some data that should have isotopes
+features=[]
+fname=[]
+for iii= 1:length(filename)
+    [features{iii} fname{iii}]=parse_mzmine_xmlfile([pathname{iii} filename{iii}]);
+end
+%% set required parameters
+params.resolution=0.01;
+params.windowsize=50;
+params.cutoff=1e-4;
+params = set_nuclei_composition(params);
+formula1=[]
+% C36H21N2O4 Scytonemin
+formula1.C=36;
+formula1.H=21;
+formula1.O=4;
+formula1.N=2;
+% trip unneccessary elements from library
+syminM = seqmatch(fieldnames(formula1),params.nucleiinfo.ele,'exact',true);
+params.nucleiinfo.ele=params.nucleiinfo.ele(syminM);
+params.nucleiinfo.mass=params.nucleiinfo.mass(syminM,:);
+params.nucleiinfo.abund=params.nucleiinfo.abund(syminM,:);
+% calculate isotopologue distributions
+pat1=fsisotope(formula1,params,{'C'},{[]},{[100-5.2 5.2]}); %labeled
+pat2=fsisotope(formula1,params,[],{[]},{[]}); %unlabeled
+pat1(:,2)=pat1(:,2)/max(pat1(:,2));
+pat2(:,2)=pat2(:,2)/max(pat2(:,2));
+stem(pat1(:,1),pat1(:,2),'r.')
+hold on
+stem(pat2(:,1),pat2(:,2),'k.')
+hold off
+%% optimize the isotopic composition of a single element to match a pattern
+element='C';
+LB=0;
+UB=99;
+X0=1;
+charge=1;
+params.minnum=5;%problematic for heavily labeled molecules
+params.plot=0; %set to 0 to speed up 10x (and not show the plot)
+% params.massrange=7;%disabled: problematic for heavily labeled molecules
+pat1(:,2)=pat1(:,2)+0.0025*(randn(size(pat1(:,2))).*pat1(:,2));%add white noise
+tic
+x=patternsearch(@(x)OptimizeIsotopicComposition(x,pat1,formula1,charge,params,element),X0,[],[],[],[],LB,UB)
+toc
+%%
+for iii = 1:length(fname)
+mz=[features{iii}(:).mz];
+rt=[features{iii}(:).rt];
+intensity=[features{iii}(:).area];
+targetmz=545.1540+4;
+targetrt=1094.5;
+xx1=find(abs(mz-targetmz)<5 & abs(rt-targetrt)<30);
+measured=zeros(length(xx1),2);
+measured(:,1)=mz(xx1);
+measured(:,2)=intensity(xx1);
+% optimize the isotopic composition of a single element to match a pattern
+element='C';
+LB=0;
+UB=99
+X0=1;
+charge=1;
+params.minnum=3;%problematic for heavily labeled molecules
+params.plot=1; %set to 0 to speed up 10x (and not show the plot)
+% params.massrange=7;%disabled: problematic for heavily labeled molecules
+tic
+x=patternsearch(@(x)OptimizeIsotopicComposition(x,measured,formula1,charge,params,element),X0,[],[],[],[],LB,UB)
+toc
+savex(iii)=x
+end
