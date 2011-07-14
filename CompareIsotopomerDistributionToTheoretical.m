@@ -9,7 +9,7 @@ function F = CompareIsotopomerDistributionToTheoretical(ysim,ytheo,charge,params
 y=zeros(size(ysim,1),1);
 y = ysim; %initial y to have all of the values of ysim.  The loop below will shift the m/z values of some peaks.
 for i = 1:size(ytheo,1)         %for each peak in ytheo
-    xx=find(abs(ysim(:,1)-ytheo(i,1)) < 0.1);        %find the index of peaks in ysim that match to within the tolerance of a ytheo peak
+    xx=find(abs(ysim(:,1)-ytheo(i,1)) < 0.3);        %find the index of peaks in ysim that match to within the tolerance of a ytheo peak
     if ~isempty(xx)    %if there are peaks that match %xx is an index that is between 1 and length(ysim);
         y(xx,1) = ytheo(i,1);   %set the m/z of the matched peaks to be equal to ytheo
         y(xx,2)=sum(ysim(xx,2));
@@ -39,22 +39,20 @@ for i = 1:length(all_mzs)
 end
 
 %% take top n
+F=1000;
 [s sx]=sort(yf(:,2),1,'descend');
 if length(s)>=params.minnum;
     yf=yf(sx(1:params.minnum),:);
     ytheof=ytheof(sx(1:params.minnum),:);
     all_mzs=all_mzs(sx(1:params.minnum));
     % compute the sse
-yf(:,2)=yf(:,2)/sum(yf(:,2));
-ytheof(:,2)=ytheof(:,2)/sum(ytheof(:,2));
-F=sum((ytheof(:,2)-yf(:,2)).^2);
-
-
+    yf(:,2)=yf(:,2)/sum(yf(:,2));
+    ytheof(:,2)=ytheof(:,2)/sum(ytheof(:,2));
+    F=sum((ytheof(:,2)-yf(:,2)).^2);
 end
 if ~isfinite(F)
     F=1000;
 end
-F
 %% plot
 if params.plot==1
     figure(1);
